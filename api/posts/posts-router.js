@@ -6,11 +6,7 @@ const db = require('./posts-model')
 router.get('/', (req, res) => {
   db.find()
     .then(posts => res.status(200).json(posts))
-    .catch(err =>
-      res
-        .status(500)
-        .json({ message: 'The posts information could not be retrieved' })
-    )
+    .catch(err => res.status(500).json(err))
 })
 
 // GET /api/posts/:id
@@ -24,6 +20,24 @@ router.get('/:id', (req, res) => {
         : res.status(200).json(post)
     )
     .catch(err => res.status(500).json(err))
+})
+
+// POST /api/posts/:id
+router.post('/', async (req, res) => {
+  try {
+    if (!req.body.title || !req.body.contents) {
+      res
+        .status(400)
+        .json({ message: 'Please provide title and contents for the post' })
+    } else {
+      const createPost = await db.insert(req.body)
+      res.status(201).json(createPost)
+    }
+  } catch (err) {
+    res.status(500).json({
+      message: 'There was an error while saving the post to the database',
+    })
+  }
 })
 
 module.exports = router
